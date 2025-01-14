@@ -7,65 +7,85 @@ import {
   TextInput,
   Button,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
-import auth from '@react-native-firebase/auth';
-import { FirebaseError } from 'firebase/app';
+import auth, { FirebaseAuthTypes } from '@react-native-firebase/auth';
 
 export default function Index() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [code, setCode] = useState('');
+  const [confirm, setConfirm] = useState<FirebaseAuthTypes.ConfirmationResult | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const signUp = async () => {
+  async function signInWithPhoneNumber() {
     setLoading(true);
     try {
-      await auth().createUserWithEmailAndPassword(email, password);
-      alert('Check your emails!');
-    } catch (e: any) {
-      const err = e as FirebaseError;
-      alert('Registration failed: ' + err.message);
+      const confirmation = await auth().signInWithPhoneNumber(phoneNumber);
+      setConfirm(confirmation);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+      alert('Error sending code: ' + errorMessage);
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const signIn = async () => {
+  async function confirmCode() {
+    if (!confirm) return;
     setLoading(true);
     try {
-      await auth().signInWithEmailAndPassword(email, password);
-    } catch (e: any) {
-      const err = e as FirebaseError;
-      alert('Sign in failed: ' + err.message);
+      await confirm.confirm(code);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+      alert('Invalid code: ' + errorMessage);
     } finally {
       setLoading(false);
     }
-  };
+  }
+
+  if (!confirm) {
+    return (
+      <View style={styles.container}>
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          <Text style={styles.label}>Enter Phone Number</Text>
+          <TextInput
+            style={styles.input}
+            value={phoneNumber}
+            onChangeText={setPhoneNumber}
+            placeholder="e.g. +1 999-999-9999"
+            keyboardType="phone-pad"
+            autoComplete="tel"
+          />
+          {loading ? (
+            <ActivityIndicator size={'small'} style={{ margin: 28 }} />
+          ) : (
+            <Button onPress={signInWithPhoneNumber} title="Send Verification Code" />
+          )}
+        </KeyboardAvoidingView>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      <KeyboardAvoidingView behavior="padding">
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <Text style={styles.label}>Enter Verification Code</Text>
         <TextInput
           style={styles.input}
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          placeholder="Email"
-        />
-        <TextInput
-          style={styles.input}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          placeholder="Password"
+          value={code}
+          onChangeText={setCode}
+          keyboardType="number-pad"
+          placeholder="Enter 6-digit code"
+          autoComplete="one-time-code"
         />
         {loading ? (
           <ActivityIndicator size={'small'} style={{ margin: 28 }} />
         ) : (
-          <>
-            <Button onPress={signIn} title="Login" />
-            <Button onPress={signUp} title="Create account" />
-          </>
+          <Button onPress={confirmCode} title="Verify Code" />
         )}
       </KeyboardAvoidingView>
     </View>
@@ -85,5 +105,10 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     padding: 10,
     backgroundColor: '#fff',
+  },
+  label: {
+    marginBottom: 8,
+    fontSize: 16,
+    fontWeight: '500',
   },
 });
