@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "201786042070",
+    "project_id": "focused-module-393818",
+    "storage_bucket": "focused-module-393818.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:201786042070:android:457c6bc2044738a1c88b77",
+        "android_client_info": {
+          "package_name": "com.seyam.otp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCO7EZnhZDIL77VI8Km2L4tuoUddropf7M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
